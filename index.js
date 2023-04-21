@@ -122,6 +122,10 @@ const typeDefs = `
       author:String!
       genres:[String!]!
     ):Book
+    editAuthor(
+      name:String!
+      setBornTo:Int!
+    ):Author
   }
 `
 const booksByAuthor = (author,books) => books.filter(b => b.author === author)
@@ -159,6 +163,18 @@ const resolvers = {
         })
       }
       return book
+    },
+    editAuthor : (root,args) => {
+      const author = authors.find(a => a.name === args.name)
+      if(!author){
+        return null
+      }
+      const modAuthor = {
+        ...author,
+        born:args.setBornTo,
+      }
+      Authors = authors.map(a => a.name === modAuthor.name ? modAuthor : a)
+      return modAuthor
     },
   }
 }
