@@ -1,7 +1,7 @@
 const Authors = (props) => {
-  if (!props.show) {
-    return null
-  }
+  // if (!props.show) {
+  //   return null
+  // }
   const authors = []
 
   return (

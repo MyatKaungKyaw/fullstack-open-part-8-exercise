@@ -1,7 +1,7 @@
 const Books = (props) => {
-  if (!props.show) {
-    return null
-  }
+  // if (!props.show) {
+  //   return null
+  // }
 
   const books = []
 
