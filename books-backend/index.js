@@ -172,8 +172,9 @@ const resolvers = {
       const modAuthor = {
         ...author,
         born:args.setBornTo,
+        bookCount : booksByAuthor(author.name,books).length,
       }
-      Authors = authors.map(a => a.name === modAuthor.name ? modAuthor : a)
+      authors = authors.map(a => a.name === modAuthor.name ? modAuthor : a)
       return modAuthor
     },
   }

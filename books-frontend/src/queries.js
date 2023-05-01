@@ -1,4 +1,4 @@
-import {gql} from '@apollo/client'
+import { gql } from '@apollo/client'
 
 export const AUTHORS = gql`
   query{
@@ -34,6 +34,19 @@ export const ADD_BOOK = gql`
       author
       genres
       
+    }
+  }
+`
+
+export const EDIT_BIRTH = gql`
+  mutation editBirth($name:String!,$setBornTo:Int!){
+    editAuthor(
+      name:$name,
+      setBornTo:$setBornTo
+    ){
+      name
+      born
+      bookCount
     }
   }
 `
