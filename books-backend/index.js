@@ -1,6 +1,24 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
-const { v1:uuid } = require('uuid')
+const { v1: uuid } = require('uuid')
+const mongoose = require('mongoose')
+require('dotenv').config()
+const author = require('./models/Author')
+const Book = require('./models/Book')
+
+mongoose.set('strictQuery', false)
+const MONGODB_URI = process.env.MONGODB_URI
+
+console.log('connecting to', MONGODB_URI)
+
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('error connecting to MongoDB:', error.message)
+  })
+
 
 let authors = [
   {
@@ -18,11 +36,11 @@ let authors = [
     id: "afa5b6f1-344d-11e9-a414-719c6709cf3e",
     born: 1821
   },
-  { 
+  {
     name: 'Joshua Kerievsky', // birthyear not known
     id: "afa5b6f2-344d-11e9-a414-719c6709cf3e",
   },
-  { 
+  {
     name: 'Sandi Metz', // birthyear not known
     id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
   },
@@ -70,7 +88,7 @@ let books = [
     author: 'Joshua Kerievsky',
     id: "afa5de01-344d-11e9-a414-719c6709cf3e",
     genres: ['refactoring', 'patterns']
-  },  
+  },
   {
     title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby',
     published: 2012,
@@ -104,7 +122,7 @@ const typeDefs = `
   type Book{
   title:String!
   published:Int!
-  author:String!
+  author:Author!
   genres:[String!]!
   }
 
@@ -128,51 +146,51 @@ const typeDefs = `
     ):Author
   }
 `
-const booksByAuthor = (author,books) => books.filter(b => b.author === author)
-const booksByGenre = (genre,books) => books.filter(b => b.genres.includes(genre))
+const booksByAuthor = (author, books) => books.filter(b => b.author === author)
+const booksByGenre = (genre, books) => books.filter(b => b.genres.includes(genre))
 
 const resolvers = {
   Query: {
-    bookCount : () => books.length,
-    authorCount : () => authors.length,
-    allBooks : (root, args) => {
+    bookCount: () => books.length,
+    authorCount: () => authors.length,
+    allBooks: (root, args) => {
       let filtBooks = books
-      if(args.author){
-        filtBooks = booksByAuthor(args.author,filtBooks)
+      if (args.author) {
+        filtBooks = booksByAuthor(args.author, filtBooks)
       }
-      if(args.genre){
-        filtBooks = booksByGenre(args.genre,filtBooks)
+      if (args.genre) {
+        filtBooks = booksByGenre(args.genre, filtBooks)
       }
-        return filtBooks
+      return filtBooks
     },
-    allAuthors : () => {
+    allAuthors: () => {
       return authors.map(a => ({
         ...a,
-        bookCount : booksByAuthor(a.name,books).length,
+        bookCount: booksByAuthor(a.name, books).length,
       }))
     },
   },
-  Mutation :{
-    addBook : (root,args) => {
-      const book = {...args, id: uuid()}
+  Mutation: {
+    addBook: (root, args) => {
+      const book = { ...args, id: uuid() }
       books = books.concat(book)
-      if(!authors.some(a => a.name === book.author)){
+      if (!authors.some(a => a.name === book.author)) {
         authors = authors.concat({
-          name:book.author,
+          name: book.author,
           id: uuid(),
         })
       }
       return book
     },
-    editAuthor : (root,args) => {
+    editAuthor: (root, args) => {
       const author = authors.find(a => a.name === args.name)
-      if(!author){
+      if (!author) {
         return null
       }
       const modAuthor = {
         ...author,
-        born:args.setBornTo,
-        bookCount : booksByAuthor(author.name,books).length,
+        born: args.setBornTo,
+        bookCount: booksByAuthor(author.name, books).length,
       }
       authors = authors.map(a => a.name === modAuthor.name ? modAuthor : a)
       return modAuthor
