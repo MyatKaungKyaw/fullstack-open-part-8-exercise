@@ -2,10 +2,11 @@ const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
 const { v1: uuid } = require('uuid')
 const mongoose = require('mongoose')
-require('dotenv').config()
-const author = require('./models/Author')
+const Author = require('./models/Author')
 const Book = require('./models/Book')
+const { GraphQLError } = require('graphql')
 
+require('dotenv').config()
 mongoose.set('strictQuery', false)
 const MONGODB_URI = process.env.MONGODB_URI
 
@@ -171,15 +172,21 @@ const resolvers = {
     },
   },
   Mutation: {
-    addBook: (root, args) => {
-      const book = { ...args, id: uuid() }
-      books = books.concat(book)
-      if (!authors.some(a => a.name === book.author)) {
-        authors = authors.concat({
-          name: book.author,
-          id: uuid(),
+    addBook: async (root, args) => {
+      const author = await Author.findOne({ name: args.author })
+      const book = new Book({ ...args, author: author })
+      try {
+        await book.save()
+      } catch (error) {
+        throw new GraphQLError('Saving book failed', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args,
+            error,
+          }
         })
       }
+
       return book
     },
     editAuthor: (root, args) => {
