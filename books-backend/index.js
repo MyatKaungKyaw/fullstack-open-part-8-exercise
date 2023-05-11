@@ -117,7 +117,7 @@ const typeDefs = `
   type Author{
     name:String!
     born:Int
-    bookCount:Int!
+    bookCount:Int
   }
 
   type Book{
@@ -152,23 +152,19 @@ const booksByGenre = (genre, books) => books.filter(b => b.genres.includes(genre
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
-    allBooks: (root, args) => {
-      let filtBooks = books
-      if (args.author) {
-        filtBooks = booksByAuthor(args.author, filtBooks)
+    bookCount: async () => await Book.collection.countDocuments(),
+    authorCount: async () => await Author.collection.countDocuments(),
+    allBooks: async (root, args) => {
+      const author = args.author && await Author.findOne({ name: args.author })
+      const filter = {
+        ...(author && { author: author._id.toString() }),
+        ...(args.genre && { genres: [args.genre] }),
       }
-      if (args.genre) {
-        filtBooks = booksByGenre(args.genre, filtBooks)
-      }
-      return filtBooks
+
+      return await Book.find(filter).populate('author')
     },
-    allAuthors: () => {
-      return authors.map(a => ({
-        ...a,
-        bookCount: booksByAuthor(a.name, books).length,
-      }))
+    allAuthors: async () => {
+      return await Author.find({})
     },
   },
   Mutation: {
