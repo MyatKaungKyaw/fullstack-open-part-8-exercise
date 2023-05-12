@@ -185,18 +185,23 @@ const resolvers = {
 
       return book
     },
-    editAuthor: (root, args) => {
-      const author = authors.find(a => a.name === args.name)
-      if (!author) {
+    editAuthor: async (root, args) => {
+      const author = await Author.findOne({name:args.name})
+      if(!author){
         return null
       }
-      const modAuthor = {
-        ...author,
-        born: args.setBornTo,
-        bookCount: booksByAuthor(author.name, books).length,
+
+      author.born = args.setBornTo
+      try{
+        await author.save()
+      }catch(error){
+        throw new GraphQLError('edit author failed',{
+          extensions:{
+            
+          }
+        })
       }
-      authors = authors.map(a => a.name === modAuthor.name ? modAuthor : a)
-      return modAuthor
+      return author
     },
   }
 }
