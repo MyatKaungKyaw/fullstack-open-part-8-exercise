@@ -4,6 +4,7 @@ const { v1: uuid } = require('uuid')
 const mongoose = require('mongoose')
 const Author = require('./models/Author')
 const Book = require('./models/Book')
+const User = require('./models/User')
 const { GraphQLError } = require('graphql')
 
 require('dotenv').config()
@@ -127,11 +128,22 @@ const typeDefs = `
   genres:[String!]!
   }
 
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+  
+  type Token {
+    value: String!
+  }
+
   type Query{
     bookCount:Int
     authorCount:Int
     allBooks(author:String genre:String):[Book!]
     allAuthors:[Author!]!
+    me:User
   }
 
   type Mutation{
@@ -145,10 +157,16 @@ const typeDefs = `
       name:String!
       setBornTo:Int!
     ):Author
+    createUser(
+      username: String!
+      favoriteGenre: String!
+    ): User
+    login(
+      username: String!
+      password: String!
+    ): Token
   }
 `
-const booksByAuthor = (author, books) => books.filter(b => b.author === author)
-const booksByGenre = (genre, books) => books.filter(b => b.genres.includes(genre))
 
 const resolvers = {
   Query: {
@@ -166,6 +184,7 @@ const resolvers = {
     allAuthors: async () => {
       return await Author.find({})
     },
+    me: (root,args,{currentUser}) => currentUser
   },
   Mutation: {
     addBook: async (root, args) => {
@@ -197,12 +216,33 @@ const resolvers = {
       }catch(error){
         throw new GraphQLError('edit author failed',{
           extensions:{
-            
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args,
+            error,
           }
         })
       }
       return author
     },
+    createUser: async (root,args) => {
+      const user = new User({...args})
+      return user.save()
+        .catch(error => {
+          return GraphQLError('saving user failed',{
+            extensions:{
+              code:'BAD_USER_INPUT',
+              invalidArgs: args,
+              error,
+            }
+          })
+        })
+    },
+    login: async (root,args) => {
+      const user = await User.findOne({username:args.useername})
+      if(!user && args.password !== 'secret'){
+        
+      }
+    }
   }
 }
 
