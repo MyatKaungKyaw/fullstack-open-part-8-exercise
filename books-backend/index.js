@@ -6,6 +6,7 @@ const Author = require('./models/Author')
 const Book = require('./models/Book')
 const User = require('./models/User')
 const { GraphQLError } = require('graphql')
+const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 mongoose.set('strictQuery', false)
@@ -238,10 +239,18 @@ const resolvers = {
         })
     },
     login: async (root,args) => {
-      const user = await User.findOne({username:args.useername})
+      const user = await User.findOne({username:args.username})
       if(!user && args.password !== 'secret'){
-        
+         throw new GraphQLError('wrong credentials',{
+          extensions:{code:'BAD_USER_INPUT'}
+         }) 
       }
+      
+      const userForToken = {
+        username:user.name,
+        id:user._id,
+      }
+      return {value: jwt.sign(userForToken,process.env.JWT_SECRET)}
     }
   }
 }
@@ -253,6 +262,14 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
+  context: async (req,res) => {
+    const auth = req.auth ? req.header.authorization : null
+    if(auth && auth.startsWith('Bearer ')){
+      const decodeToken = jwt.verify(auth.subString(7),process.env.JWT_SECRET)
+      const currentUser = await User.findById(decodeToken.id)
+      return {currentUser}
+    }
+  }
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`)
 })
