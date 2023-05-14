@@ -188,7 +188,13 @@ const resolvers = {
     me: (root, args, { currentUser }) => currentUser
   },
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, { currentUser }) => {
+      if (!currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: { code: 'BAD_USER_INPUT' }
+        })
+      }
+
       const author = await Author.findOne({ name: args.author })
       const book = new Book({ ...args, author: author })
       try {
@@ -205,7 +211,13 @@ const resolvers = {
 
       return book
     },
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, { currentUser }) => {
+      if (!currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: { code: 'BAD_USER_INPUT' }
+        })
+      }
+
       const author = await Author.findOne({ name: args.name })
       if (!author) {
         return null
@@ -262,10 +274,10 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
-  context: async (req, res) => {
-    const auth = req.auth ? req.header.authorization : null
+  context: async ({req, res}) => {
+    const auth = req ? req.headers.authorization : null
     if (auth && auth.startsWith('Bearer ')) {
-      const decodeToken = jwt.verify(auth.subString(7), process.env.JWT_SECRET)
+      const decodeToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET)
       const currentUser = await User.findById(decodeToken.id)
       return { currentUser }
     }
