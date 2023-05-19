@@ -17,8 +17,8 @@ const EditBirthYear = () => {
     })
 
     useEffect(() => {
-        setName(result.data.allAuthors[0].name)
-    },[result.data])
+        resetName()
+    },[result.data]) // eslint-disable-line
 
     if (result.loading) {
         return null
@@ -35,9 +35,11 @@ const EditBirthYear = () => {
                 setBornTo: parseInt(born),
             }
         })
-        setName('')
+        resetName()
         setBorn('')
     }
+
+    const resetName = () => {setName(result.data.allAuthors[0].name)}
 
     return (
         <div>

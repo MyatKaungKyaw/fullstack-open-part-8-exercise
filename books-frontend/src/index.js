@@ -15,7 +15,7 @@ const authLink = setContext((_, { headers }) => {
   }
 })
 
-const httpLink = createHttpLink({ uri: 'https://fullstack-open-part-8-exercise.myatkaungkyaw.repl.co/' })
+const httpLink = createHttpLink({ uri: 'http://localhost:4000/' })
 
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
