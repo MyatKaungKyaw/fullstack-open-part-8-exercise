@@ -8,12 +8,17 @@ import {
   Route,
   useNavigate,
 } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useApolloClient } from '@apollo/client'
 
 const App = () => {
   const [token, setToken] = useState(null)
   const client = useApolloClient()
+
+  useEffect(() => {
+    const token = localStorage.getItem('user-token')
+    token && setToken(token)
+  },[])
 
   const padding = {
     padding: 5,

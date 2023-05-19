@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery, useMutation } from "@apollo/client"
 import { AUTHORS, EDIT_BIRTH } from "../queries"
 
@@ -10,8 +10,15 @@ const EditBirthYear = () => {
     const [editBithYear] = useMutation(EDIT_BIRTH, {
         refetchQueries: [
             { query: AUTHORS }
-        ]
+        ],
+        onError: error => {
+            console.log(error)
+        },
     })
+
+    useEffect(() => {
+        setName(result.data.allAuthors[0].name)
+    },[result.data])
 
     if (result.loading) {
         return null
@@ -21,13 +28,13 @@ const EditBirthYear = () => {
 
     const submit = async e => {
         e.preventDefault()
+
         editBithYear({
             variables: {
                 name,
                 setBornTo: parseInt(born),
             }
         })
-
         setName('')
         setBorn('')
     }
@@ -38,7 +45,7 @@ const EditBirthYear = () => {
             <form onSubmit={submit}>
                 <div>
                     name
-                    <select value={name} onChange={e => setName(e.target.value)}>
+                    <select value={name} onChange={e => {setName(e.target.value)}}>
                         {
                             authorsName.map(author => (
                                 <option key={author} value={author}>{author}</option>
