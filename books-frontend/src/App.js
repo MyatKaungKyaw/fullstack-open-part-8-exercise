@@ -2,6 +2,7 @@ import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import LoginForm from './components/LoginForm'
+import Recommend from './components/Recommend'
 import {
   Link,
   Routes,
@@ -18,7 +19,7 @@ const App = () => {
   useEffect(() => {
     const token = localStorage.getItem('user-token')
     token && setToken(token)
-  },[])
+  }, [])
 
   const padding = {
     padding: 5,
@@ -41,8 +42,8 @@ const App = () => {
         {token ?
           <>
             <Link style={padding} to='/add-book'>add book</Link>
+            <Link sytle={padding} to='/recommend'>recommend</Link>
             <Link style={padding} onClick={logout}>logout</Link>
-            {/* <a style={padding} >logout</a> */}
           </>
           : <Link style={padding} to='/login'>login</Link>
         }
@@ -53,7 +54,7 @@ const App = () => {
         <Route path='/books' element={<Books />} />
         <Route path='/add-book' element={<NewBook />} />
         <Route path='/login' element={<LoginForm setToken={setToken} />} />
-        {/* <Route path='/logout' onEnter={logout}/> */}
+        <Route path='/recommend' element={<Recommend />} />
       </Routes>
     </div>
   )
