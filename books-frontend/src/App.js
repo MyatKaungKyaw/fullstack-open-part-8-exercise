@@ -7,7 +7,6 @@ import {
   Link,
   Routes,
   Route,
-  useNavigate,
 } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useApolloClient } from '@apollo/client'
@@ -25,13 +24,10 @@ const App = () => {
     padding: 5,
   }
 
-  const navigate = useNavigate()
-
   const logout = () => {
     setToken(null)
     localStorage.clear()
     client.resetStore()
-    navigate('/')
   }
 
   return (
@@ -43,7 +39,7 @@ const App = () => {
           <>
             <Link style={padding} to='/add-book'>add book</Link>
             <Link sytle={padding} to='/recommend'>recommend</Link>
-            <Link style={padding} onClick={logout}>logout</Link>
+            <Link style={padding} onClick={logout} to='/'>logout</Link>
           </>
           : <Link style={padding} to='/login'>login</Link>
         }
