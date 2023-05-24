@@ -2,10 +2,14 @@ import { useQuery } from '@apollo/client'
 import { BOOKS } from '../queries'
 import { useState } from 'react'
 
-const Books = (props) => {
-  const result = useQuery(BOOKS)
+const Books = () => {
+  const booksResult = useQuery(BOOKS)
   const [selectedGenre, setSelectedGenre] = useState(null)
-
+  const variables = selectedGenre && selectedGenre !== 'all genres' ? {genre: selectedGenre} : {}
+  const filterBooksResult = useQuery(BOOKS,{
+    variables: variables,
+  })
+  
   const genreOnClick = (genre) => {
     setSelectedGenre(genre)
   }
@@ -14,23 +18,27 @@ const Books = (props) => {
     <div>
       {genres.map(genre => (
         <button
+          key={genre}
           onClick={() => { genreOnClick(genre) }}
         >{genre}</button>
       ))}
     </div>
   )
 
-  if (result.loading) {
+  if (booksResult.loading || filterBooksResult.loading) {
     return <div>loading...</div>
   }
 
-  if (result.error) {
-    return <div>Error: {result.error.message}</div>
+  if (booksResult.error || filterBooksResult.error) {
+    return <div>Error: {booksResult.error ? 
+      booksResult.error.message
+      : filterBooksResult.error.message
+    }</div>
   }
 
-  const books = result.data.allBooks
+  const books = booksResult.data.allBooks
   const genres = [...new Set(books.reduce((arr, book) => arr = arr.concat(...book.genres), ['all genres']))]
-  const filterBooks = !selectedGenre || selectedGenre === 'all genres' ? books : books.filter(book => book.genres.includes(selectedGenre))
+  const displayBooks = !selectedGenre || selectedGenre === 'all genres' ? books : books.filter(book => book.genres.includes(selectedGenre))
 
   return (
     <div>
@@ -43,7 +51,7 @@ const Books = (props) => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {filterBooks.map((a) => {
+          {displayBooks.map((a) => {
             return (<tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>

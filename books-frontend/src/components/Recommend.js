@@ -1,4 +1,3 @@
-import { useContext } from "react"
 import { useQuery } from "@apollo/client"
 import { BOOKS, ME } from "../queries"
 
@@ -22,8 +21,8 @@ const Recommend = () => {
 
   return(
       <div>
-          <h2>recommendations</h2>
-          <div>books in your favorite genre <b>patterns</b></div>
+        <h2>recommendations</h2>
+        <div>books in your favorite genre <b>patterns</b></div>
         <table>
         <tbody>
           <tr>
