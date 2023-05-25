@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client"
 import {AUTHORS} from '../queries'
 import EditBirthYear from "./EditBirthYear"
 
-const Authors = (props) => {
+const Authors = () => {
   const result = useQuery(AUTHORS)
 
   if(result.loading){
