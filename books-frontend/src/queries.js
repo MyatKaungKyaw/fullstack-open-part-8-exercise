@@ -14,7 +14,6 @@ const BOOK_DETAILS = gql`
   }
 `
 
-
 //query
 export const AUTHORS = gql`
   query Query {

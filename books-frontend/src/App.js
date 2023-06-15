@@ -9,7 +9,13 @@ import {
   Route,
 } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { useApolloClient } from '@apollo/client'
+import {
+  useApolloClient,
+  useQuery,
+  useMutation,
+  useSubscription,
+} from '@apollo/client'
+import {BOOK_ADDED} from './queries'
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -29,6 +35,12 @@ const App = () => {
     localStorage.clear()
     client.resetStore()
   }
+
+  useSubscription(BOOK_ADDED,{
+    onData: ({data}) => {
+      window.alert(`Book '${data.data.bookAdded.title}' added`)
+    }
+  })
 
   return (
     <div>
