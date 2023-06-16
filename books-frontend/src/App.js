@@ -15,7 +15,7 @@ import {
   useMutation,
   useSubscription,
 } from '@apollo/client'
-import {BOOK_ADDED} from './queries'
+import {BOOK_ADDED, BOOKS} from './queries'
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -66,6 +66,25 @@ const App = () => {
       </Routes>
     </div>
   )
+}
+
+// function that takes care of manipulating cache
+export const updateCacheAftBookAdded = (cache, query, addedBook) => {
+  // helper that is used to eliminate saving same person twice
+  const uniqByName = (a) => {
+    let seen = new Set()
+    return a.filter((item) => {
+      let k = item.name
+      return seen.has(k) ? false : seen.add(k)
+    })
+  }
+
+
+  cache.updateQuery(query, ({ allBooks }) => {
+    return {
+      allBooks: uniqByName(allBooks.concat(addedBook)),
+    }
+  })
 }
 
 export default App
