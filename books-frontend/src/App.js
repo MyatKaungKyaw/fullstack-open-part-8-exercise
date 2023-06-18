@@ -11,11 +11,9 @@ import {
 import { useEffect, useState } from 'react'
 import {
   useApolloClient,
-  useQuery,
-  useMutation,
   useSubscription,
 } from '@apollo/client'
-import {BOOK_ADDED, BOOKS} from './queries'
+import { BOOK_ADDED, BOOKS } from './queries'
 
 const App = () => {
   const [token, setToken] = useState(null)
@@ -36,9 +34,11 @@ const App = () => {
     client.resetStore()
   }
 
-  useSubscription(BOOK_ADDED,{
-    onData: ({data}) => {
-      window.alert(`Book '${data.data.bookAdded.title}' added`)
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data, client }) => {
+      const addedBook = data.data.bookAdded
+      window.alert(`Book '${addedBook.title}' added`)
+      updateAllBooksCache(client.cache, { query: BOOKS }, addedBook)
     }
   })
 
@@ -69,22 +69,31 @@ const App = () => {
 }
 
 // function that takes care of manipulating cache
-export const updateCacheAftBookAdded = (cache, query, addedBook) => {
-  // helper that is used to eliminate saving same person twice
-  const uniqByName = (a) => {
-    let seen = new Set()
-    return a.filter((item) => {
-      let k = item.name
-      return seen.has(k) ? false : seen.add(k)
-    })
-  }
-
-
-  cache.updateQuery(query, ({ allBooks }) => {
-    return {
-      allBooks: uniqByName(allBooks.concat(addedBook)),
+export const updateAllBooksCache = (cache, query, addedBook) => {
+  try {
+    //check if allBooks data exists in cache
+    const cacheData = cache.readQuery({ query: BOOKS })
+    if(!cacheData){
+      return
     }
-  })
+
+    // helper that is used to eliminate saving same person twice
+    const uniqByName = (a) => {
+      let seen = new Set()
+      return a.filter((item) => {
+        let k = item.title
+        return seen.has(k) ? false : seen.add(k)
+      })
+    }
+
+    cache.updateQuery(query, ({ allBooks }) => {
+      return {
+        allBooks: uniqByName(allBooks.concat(addedBook)),
+      }
+    })
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 export default App

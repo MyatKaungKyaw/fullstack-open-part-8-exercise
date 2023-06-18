@@ -26,7 +26,7 @@ export const AUTHORS = gql`
 `
 
 export const BOOKS = gql`
-  query AllBooks($author: String, $genre: String) {
+  query ($author: String, $genre: String) {
     allBooks(author: $author, genre: $genre) {
       ...BookDetails
     }
@@ -46,7 +46,7 @@ export const ME = gql`
 
 //subscription
 export const BOOK_ADDED = gql`
-  subscription Subscription {
+  subscription {
     bookAdded {
       ...BookDetails
     }
