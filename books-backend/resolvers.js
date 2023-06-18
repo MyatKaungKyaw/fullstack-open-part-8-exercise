@@ -36,6 +36,7 @@ const resolvers = {
             const book = new Book({ ...args, author: author })
             try {
                 await book.save()
+                await Author.updateOne({ name: args.author }, { bookCount: author.bookCount + 1 })
             } catch (error) {
                 throw new GraphQLError('Saving book failed', {
                     extensions: {
@@ -46,7 +47,7 @@ const resolvers = {
                 })
             }
 
-            pubsub.publish('BOOK_ADDED',{bookAdded: book})
+            pubsub.publish('BOOK_ADDED', { bookAdded: book })
 
             return book
         },
@@ -104,8 +105,8 @@ const resolvers = {
             return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
         }
     },
-    Subscription:{
-        bookAdded:{
+    Subscription: {
+        bookAdded: {
             subscribe: () => pubsub.asyncIterator('BOOK_ADDED')
         }
     }
