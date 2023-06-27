@@ -22,10 +22,10 @@ const authLink = setContext((_, { headers }) => {
   }
 })
 
-const httpLink = createHttpLink({ uri: 'http://localhost:4000' })
+const httpLink = createHttpLink({ uri: 'https://fullstack-open-part-8-exercise-backend.onrender.com/' })
 
 const wsLink = new GraphQLWsLink(
-  createClient({ url: 'ws://localhost:4000' })
+  createClient({ url: 'ws://fullstack-open-part-8-exercise-backend.onrender.com/' })
 )
 
 const splitLink = split(
